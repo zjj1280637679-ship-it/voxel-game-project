@@ -1,0 +1,281 @@
+{
+  "pulse_bits": {
+    "Mech_T1":       { "bit": 0,  "category": "Mech",   "inherits": [] },
+    "Mech_T2":       { "bit": 1,  "category": "Mech",   "inherits": ["Mech_T1"] },
+    "Mech_T3":       { "bit": 2,  "category": "Mech",   "inherits": ["Mech_T2"] },
+    "Mech_T4":       { "bit": 3,  "category": "Mech",   "inherits": ["Mech_T3"] },
+    "Mech_Sharp":    { "bit": 4,  "category": "Mech",   "inherits": [] },
+    "Mech_Blunt":    { "bit": 5,  "category": "Mech",   "inherits": [] },
+    "Mech_Gentle":   { "bit": 6,  "category": "Mech",   "inherits": [] },
+    "Mech_Toggle":   { "bit": 7,  "category": "Mech",   "inherits": [] },
+    "Mech_Shear":    { "bit": 8,  "category": "Mech",   "inherits": [] },
+    "Mech_Impact":   { "bit": 9,  "category": "Mech",   "inherits": [] },
+
+    "Thermo_Cold_T1":{ "bit": 10, "category": "Thermo", "inherits": [] },
+    "Thermo_Heat_T1":{ "bit": 12, "category": "Thermo", "inherits": [] },
+    "Thermo_Heat_T2":{ "bit": 13, "category": "Thermo", "inherits": ["Thermo_Heat_T1"] },
+    "Thermo_Heat_T3":{ "bit": 14, "category": "Thermo", "inherits": ["Thermo_Heat_T2"] },
+
+    "Magic_Vita":    { "bit": 16, "category": "Magic",  "inherits": [] },
+    "Magic_Decay":   { "bit": 17, "category": "Magic",  "inherits": [] },
+    "Magic_Arcane":  { "bit": 18, "category": "Magic",  "inherits": [] },
+    "Magic_Volt":    { "bit": 19, "category": "Magic",  "inherits": [] },
+
+    "Atmo_O2":       { "bit": 24, "category": "Atmo",   "inherits": [] },
+    "Atmo_NoO2":     { "bit": 25, "category": "Atmo",   "inherits": [] },
+    "Atmo_Wet":      { "bit": 26, "category": "Atmo",   "inherits": [] },
+    "Atmo_Toxic":    { "bit": 27, "category": "Atmo",   "inherits": [] }
+  },
+
+  "prototypes": {
+    "EntityRoot": { "parent": null, "form": "Abstract", "hp": 100 },
+
+    "@Form_GridStatic": { "parent": "EntityRoot", "form": "GridStatic" },
+    "@Form_GridFluid":  { "parent": "EntityRoot", "form": "GridFluid" },
+    "@Form_FreeBody":   { "parent": "EntityRoot", "form": "FreeBody" },
+
+    "@Mix_GravityFragile": { "parent": null, "kind": "mixin" },
+    "@Mix_Toggleable":     { "parent": null, "kind": "mixin" },
+    "@Mix_Seeker":         { "parent": null, "kind": "mixin", "ai": "seek_target" },
+    "@Mix_Isolator":       { "parent": null, "kind": "mixin", "isolates": true },
+
+    "@Mat_Item": { "parent": "@Form_FreeBody", "hp": 20, "recoil": { "amount": 0, "mask": "Mech_Impact" } },
+
+    "@Mat_Mineral": { "parent": "@Form_GridStatic", "hp": 100, "recoil": { "amount": 10, "mask": "Mech_Impact | Mech_T3" } },
+    "Stone":        { "parent": "@Mat_Mineral", "hp": 100 },
+    "Obsidian":     { "parent": "@Mat_Mineral", "hp": 30 },
+    "Glass":        { "parent": "@Mat_Mineral", "hp": 5,  "recoil": { "amount": 1, "mask": "Mech_Impact" } },
+    "Sand":         { "parent": "@Mat_Mineral", "mixins": ["@Mix_GravityFragile"], "hp": 30, "recoil": { "amount": 2, "mask": "Mech_Impact" } },
+    "IronOre":      { "parent": "@Mat_Mineral", "hp": 90 },
+
+    "@Mat_Wood":    { "parent": "@Form_GridStatic", "hp": 50, "recoil": { "amount": 5, "mask": "Mech_Impact | Mech_T1" } },
+    "OakLog":       { "parent": "@Mat_Wood", "hp": 60 },
+    "OakPlank":     { "parent": "@Mat_Wood", "hp": 40 },
+    "OakPlank_Slab":{ "parent": "OakPlank", "hp_scale": 0.5, "shape": "HalfBottom" },
+    "OakDoor_Closed": {
+      "parent": "OakPlank",
+      "mixins": ["@Mix_Toggleable"],
+      "hp_scale": 0.8,
+      "shape": "ThinDoor"
+    },
+    "OakDoor_Open": {
+      "parent": "OakPlank",
+      "mixins": ["@Mix_Toggleable"],
+      "hp_scale": 0.8,
+      "shape": "ThinDoorOpen"
+    },
+    "Workbench": {
+      "parent": "@Mat_Wood",
+      "mixins": ["@Mix_Isolator"],
+      "hp": 80,
+      "forwards_masks": ["Mech_Toggle", "Mech_Blunt"]
+    },
+
+    "@Mat_Plant": { "parent": "@Form_GridStatic", "hp": 15 },
+    "Sapling":    { "parent": "@Mat_Plant", "hp": 15 },
+    "Leaf":       { "parent": "@Mat_Plant", "hp": 8 },
+    "Mushroom":   { "parent": "@Mat_Plant", "hp": 5 },
+
+    "Water":      { "parent": "@Form_GridFluid",  "hp": 10, "emits_atmo": "Atmo_Wet" },
+    "Ice":        { "parent": "@Form_GridStatic", "hp": 20 },
+    "Fire":       { "parent": "@Form_GridStatic", "hp": 10, "emits_pulse": { "amount": 15, "channels": { "Thermo": [1.0, "Thermo_Heat_T2"] } } },
+
+    "@Mat_Fauna": { "parent": "@Form_FreeBody", "hp": 40, "ai": "graze", "recoil": { "amount": 1, "mask": "Mech_Impact | Mech_T1" } },
+    "Sheep_Live": { "parent": "@Mat_Fauna", "hp": 40, "corpse_base": "Sheep_Corpse" },
+    "UndeadSheep":{ "parent": "@Mat_Fauna", "hp": 35, "corpse_base": "Bone_Item" },
+
+    "@Mat_Corpse":  { "parent": "@Form_FreeBody", "hp": 30 },
+    "Sheep_Corpse": { "parent": "@Mat_Corpse",    "hp": 30 },
+
+    "@Mat_ResourceBit": { "parent": "@Form_FreeBody", "hp": 5 },
+    "Sulfur_Bit":       { "parent": "@Mat_ResourceBit", "hp": 5 },
+    "Charcoal_Bit":     { "parent": "@Mat_ResourceBit", "hp": 5 },
+    "Saltpeter_Bit":    { "parent": "@Mat_ResourceBit", "hp": 5 },
+    "IronIngot_Bit":    { "parent": "@Mat_ResourceBit", "hp": 40 },
+    "OakStick_Bit":     { "parent": "@Mat_ResourceBit", "hp": 10 },
+
+    "@Mat_Projectile": { "parent": "@Form_FreeBody", "hp": 2 },
+    "Arrow_Wood":      { "parent": "@Mat_Projectile", "hp": 2, "impact_pulse": { "amount": 10, "channels": { "Mech": [1.0, "Mech_T2 | Mech_Sharp"] } } },
+    "HomingOrb_Fire":  {
+      "parent": "@Mat_Projectile",
+      "mixins": ["@Mix_Seeker"],
+      "hp": 1,
+      "impact_pulse": { "amount": 20, "channels": { "Thermo": [0.7, "Thermo_Heat_T2"], "Mech": [0.3, "Mech_T2"] } }
+    },
+    "SummonedWisp": {
+      "parent": "@Mat_Fauna",
+      "mixins": ["@Mix_Seeker"],
+      "hp": 50,
+      "contact_pulse": { "amount": 15, "channels": { "Thermo": [0.7, "Thermo_Heat_T2"], "Magic": [0.3, "Magic_Arcane"] } }
+    },
+
+    "FallingBlock":        { "parent": "@Form_FreeBody", "hp": 10 },
+    "Obsidian_Item":       { "parent": "@Mat_Item" },
+    "GlassShard_Item":     { "parent": "@Mat_Item" },
+    "Cobble_Item":         { "parent": "@Mat_Item" },
+    "IronOre_Item":        { "parent": "@Mat_Item" },
+    "Sand_Item":           { "parent": "@Mat_Item" },
+    "IceShard_Item":       { "parent": "@Mat_Item" },
+    "OakLog_Item":         { "parent": "@Mat_Item" },
+    "OakPlank_Item":       { "parent": "@Mat_Item" },
+    "OakPlank_Slab_Item":  { "parent": "@Mat_Item" },
+    "OakDoor_Closed_Item": { "parent": "@Mat_Item" },
+    "OakDoor_Open_Item":   { "parent": "@Mat_Item" },
+    "Workbench_Item":      { "parent": "@Mat_Item" },
+    "Sapling_Item":        { "parent": "@Mat_Item" },
+    "Leaf_Item":           { "parent": "@Mat_Item" },
+    "Mushroom_Item":       { "parent": "@Mat_Item" },
+    "RawMutton_Item":      { "parent": "@Mat_Item" },
+    "CookedMutton_Item":   { "parent": "@Mat_Item" },
+    "RottenMeat_Item":     { "parent": "@Mat_Item" },
+    "MeatScrap_Item":      { "parent": "@Mat_Item" },
+    "IntactWool_Item":     { "parent": "@Mat_Item" },
+    "TornWool_Item":       { "parent": "@Mat_Item" },
+    "ChargedWool_Item":    { "parent": "@Mat_Item" },
+    "Bone_Item":           { "parent": "@Mat_Item" },
+    "Ash_Item":            { "parent": "@Mat_Item" },
+    "Charcoal_Item":       { "parent": "@Mat_Item" },
+    "IronIngot_Item":      { "parent": "@Mat_Item" },
+    "RottenWood_Item":     { "parent": "@Mat_Item" },
+    "StuckArrow":          { "parent": "@Mat_Item" },
+    "BrokenStick_Item":    { "parent": "@Mat_Item" },
+    "Gunpowder_Pack":      { "parent": "@Mat_Item" },
+    "IronSword_Item":      { "parent": "@Mat_Item" },
+    "ExplosionShock":      { "parent": "@Mat_Item", "hp": 1 }
+  },
+
+  "channel_gates": [
+    { "target": "Obsidian",     "category": "Mech",   "req": "Mech_T3",                "weight": 1.0 },
+    { "target": "Obsidian",     "category": "Mech",   "req": "Mech_T1",                "weight": 0.0 },
+    { "target": "Glass",        "category": "Mech",   "req": "Mech_T1",                "weight": 1.0 },
+
+    { "target": "@Mat_Mineral", "category": "Mech",   "req": "Mech_T3",                "weight": 2.5 },
+    { "target": "@Mat_Mineral", "category": "Mech",   "req": "Mech_T2",                "weight": 1.0 },
+    { "target": "@Mat_Mineral", "category": "Thermo", "req": "Thermo_Heat_T3",         "weight": 1.0 },
+
+    { "target": "@Mat_Wood",    "category": "Mech",   "req": "Mech_T1 | Mech_Sharp",   "weight": 2.5 },
+    { "target": "@Mat_Wood",    "category": "Mech",   "req": "Mech_T1",                "weight": 0.8 },
+    { "target": "@Mat_Wood",    "category": "Thermo", "req": "Thermo_Heat_T2",         "weight": 1.2 },
+    { "target": "@Mat_Wood",    "category": "Magic",  "req": "Magic_Decay",            "weight": 0.8 },
+
+    { "target": "Sapling",      "category": "Magic",  "req": "Magic_Vita",             "weight": 1.0 },
+    { "target": "@Mat_Plant",   "category": "Mech",   "req": "Mech_T1",                "weight": 1.0 },
+    { "target": "@Mat_Plant",   "category": "Thermo", "req": "Thermo_Heat_T2",         "weight": 1.5 },
+    { "target": "@Mat_Plant",   "category": "Magic",  "req": "Magic_Decay",            "weight": 1.0 },
+
+    { "target": "Water",        "category": "Thermo", "req": "Thermo_Cold_T1",         "weight": 1.0 },
+    { "target": "Water",        "category": "Thermo", "req": "Thermo_Heat_T2",         "weight": 1.0 },
+    { "target": "Ice",          "category": "Thermo", "req": "Thermo_Heat_T1",         "weight": 1.0 },
+    { "target": "Ice",          "category": "Mech",   "req": "Mech_T1",                "weight": 1.0 },
+    { "target": "Fire",         "category": "Thermo", "req": "Thermo_Cold_T1",         "weight": 1.0 },
+    { "target": "Fire",         "category": "Atmo",   "req": "Atmo_Wet",               "weight": 999.0 },
+    { "target": "Fire",         "category": "Magic",  "req": "Magic_Decay",            "weight": 1.0 },
+
+    { "target": "@Mat_Fauna",   "category": "Mech",   "req": "Mech_T1",                "weight": 1.0 },
+    { "target": "@Mat_Fauna",   "category": "Thermo", "req": "Thermo_Heat_T2",         "weight": 1.2 },
+    { "target": "@Mat_Fauna",   "category": "Magic",  "req": "Magic_Volt",             "weight": 1.5 },
+    { "target": "@Mat_Fauna",   "category": "Atmo",   "req": "Atmo_Toxic",             "weight": 1.0 },
+
+    { "target": "@Mat_Corpse",  "category": "Mech",   "req": "Mech_T1 | Mech_Sharp | Mech_Gentle", "weight": 1.0 },
+    { "target": "@Mat_Corpse",  "category": "Mech",   "req": "Mech_T1",                "weight": 1.0 },
+    { "target": "@Mat_Corpse",  "category": "Thermo", "req": "Thermo_Heat_T2",         "weight": 1.0 },
+    { "target": "@Mat_Corpse",  "category": "Magic",  "req": "Magic_Arcane",           "weight": 1.0 },
+    { "target": "@Mat_Corpse",  "category": "Magic",  "req": "Magic_Decay",            "weight": 1.0 },
+
+    { "target": "Sulfur_Bit",   "category": "Thermo", "req": "Thermo_Heat_T2",         "weight": 1.0 },
+    { "target": "Saltpeter_Bit","category": "Thermo", "req": "Thermo_Heat_T2",         "weight": 1.0 },
+    { "target": "Charcoal_Bit", "category": "Thermo", "req": "Thermo_Heat_T2",         "weight": 1.0 },
+    { "target": "IronIngot_Bit","category": "Thermo", "req": "Thermo_Heat_T3",         "weight": 1.0 },
+    { "target": "@Mat_ResourceBit", "category": "Mech", "req": "Mech_T1",              "weight": 1.0 },
+
+    { "target": "Arrow_Wood",      "category": "Thermo", "req": "Thermo_Heat_T2",      "weight": 1.0 },
+    { "target": "HomingOrb_Fire",  "category": "Thermo", "req": "Thermo_Cold_T1",      "weight": 1.0 },
+    { "target": "@Mat_Projectile", "category": "Mech",   "req": "Mech_Impact",         "weight": 1.0 },
+    { "target": "@Mat_Projectile", "category": "Mech",   "req": "Mech_T1",             "weight": 1.0 },
+
+    { "target": "@Mix_GravityFragile", "category": "Mech",  "req": "Mech_Shear",       "weight": 1.0 },
+    { "target": "@Mix_Toggleable",     "category": "Mech",  "req": "Mech_Toggle",      "weight": 999.0 },
+    { "target": "@Mix_Toggleable",     "category": "Magic", "req": "Magic_Arcane",     "weight": 999.0 }
+  ],
+
+  "atmo_modifiers": [
+    { "target": "@Mat_Wood",  "atmo": "Atmo_Wet",  "category": "Thermo", "mult": 0.15 },
+    { "target": "@Mat_Wood",  "atmo": "Atmo_Wet",  "category": "Magic",  "mult": 1.5 },
+    { "target": "@Mat_Wood",  "atmo": "Atmo_NoO2", "category": "Thermo", "mult": 0.7 },
+    { "target": "@Mat_Plant", "atmo": "Atmo_Wet",  "category": "Magic",  "mult": 2.0 },
+    { "target": "@Mat_Fauna", "atmo": "Atmo_Wet",  "category": "Magic",  "mult": 2.0 }
+  ],
+
+  "deathrattle_table": [
+    { "target": "Obsidian",     "category": "Mech",   "sub": "",                    "spawns": ["Obsidian_Item"] },
+    { "target": "Glass",        "category": "Mech",   "sub": "",                    "spawns": ["GlassShard_Item"] },
+    { "target": "Sand",         "category": "Mech",   "sub": "Mech_Shear",          "spawns": ["FallingBlock"] },
+    { "target": "Sand",         "category": "Mech",   "sub": "",                    "spawns": ["Sand_Item"] },
+    { "target": "Sand",         "category": "Thermo", "sub": "Thermo_Heat_T3",      "spawns": ["Glass"] },
+    { "target": "IronOre",      "category": "Mech",   "sub": "",                    "spawns": ["IronOre_Item"] },
+    { "target": "IronOre",      "category": "Thermo", "sub": "Thermo_Heat_T3",      "spawns": ["IronIngot_Item", "Ash_Item"] },
+
+    { "target": "@Mat_Mineral", "category": "Mech",   "sub": "Mech_Gentle",         "spawns": ["$SELF_ITEM"] },
+    { "target": "@Mat_Mineral", "category": "Mech",   "sub": "",                    "spawns": ["Cobble_Item"] },
+    { "target": "@Mat_Mineral", "category": "Thermo", "sub": "",                    "spawns": ["Ash_Item"] },
+
+    { "target": "OakDoor_Closed", "category": "Mech",  "sub": "Mech_Toggle",        "spawns": ["OakDoor_Open"], "preserve_hp": true },
+    { "target": "OakDoor_Closed", "category": "Magic", "sub": "Magic_Arcane",       "spawns": ["OakDoor_Open"], "preserve_hp": true },
+    { "target": "OakDoor_Open",   "category": "Mech",  "sub": "Mech_Toggle",        "spawns": ["OakDoor_Closed"], "preserve_hp": true },
+    { "target": "OakDoor_Open",   "category": "Magic", "sub": "Magic_Arcane",       "spawns": ["OakDoor_Closed"], "preserve_hp": true },
+
+    { "target": "Workbench", "category": "Mech",   "sub": "", "spawns": ["$SPILL_CONTENTS", "$SELF_ITEM"] },
+    { "target": "Workbench", "category": "Thermo", "sub": "", "spawns": ["$SPILL_CONTENTS", "Fire", "Ash_Item"] },
+    { "target": "Workbench", "category": "Magic",  "sub": "", "spawns": ["$SPILL_CONTENTS", "RottenWood_Item"] },
+
+    { "target": "@Mat_Wood", "category": "Mech",   "sub": "",          "spawns": ["$SELF_ITEM"] },
+    { "target": "@Mat_Wood", "category": "Thermo", "sub": "Atmo_NoO2", "spawns": ["Charcoal_Item"] },
+    { "target": "@Mat_Wood", "category": "Thermo", "sub": "",          "spawns": ["Fire", "Ash_Item"] },
+    { "target": "@Mat_Wood", "category": "Magic",  "sub": "Atmo_Wet",  "spawns": ["RottenWood_Item", "Mushroom"] },
+    { "target": "@Mat_Wood", "category": "Magic",  "sub": "",          "spawns": ["RottenWood_Item"] },
+
+    { "target": "Sapling",   "category": "Magic",  "sub": "Magic_Vita", "spawns": ["OakLog", "Leaf"] },
+    { "target": "@Mat_Plant","category": "Mech",   "sub": "",           "spawns": ["$SELF_ITEM"] },
+    { "target": "@Mat_Plant","category": "Thermo", "sub": "",           "spawns": ["Ash_Item"] },
+    { "target": "@Mat_Plant","category": "Magic",  "sub": "",           "spawns": ["Ash_Item"] },
+
+    { "target": "Water", "category": "Thermo", "sub": "Thermo_Cold_T1", "spawns": ["Ice"] },
+    { "target": "Water", "category": "Thermo", "sub": "",               "spawns": [] },
+    { "target": "Ice",   "category": "Thermo", "sub": "",               "spawns": ["Water"] },
+    { "target": "Ice",   "category": "Mech",   "sub": "",               "spawns": ["IceShard_Item"] },
+    { "target": "Fire",  "category": "Thermo", "sub": "",               "spawns": [] },
+    { "target": "Fire",  "category": "Atmo",   "sub": "",               "spawns": [] },
+    { "target": "Fire",  "category": "Magic",  "sub": "",               "spawns": [] },
+
+    { "target": "@Mat_Fauna", "category": "Mech",   "sub": "", "spawns": ["$CORPSE"] },
+    { "target": "@Mat_Fauna", "category": "Thermo", "sub": "", "spawns": ["CookedMutton_Item", "CookedMutton_Item", "Ash_Item"] },
+    { "target": "@Mat_Fauna", "category": "Magic",  "sub": "", "spawns": ["RawMutton_Item", "ChargedWool_Item"] },
+    { "target": "@Mat_Fauna", "category": "Atmo",   "sub": "", "spawns": ["RottenMeat_Item", "Bone_Item"] },
+
+    { "target": "Sheep_Corpse", "category": "Mech",   "sub": "Mech_Sharp | Mech_Gentle", "spawns": ["RawMutton_Item", "RawMutton_Item", "IntactWool_Item", "Bone_Item"] },
+    { "target": "Sheep_Corpse", "category": "Mech",   "sub": "",                           "spawns": ["MeatScrap_Item", "TornWool_Item", "Bone_Item"] },
+    { "target": "Sheep_Corpse", "category": "Thermo", "sub": "",                           "spawns": ["CookedMutton_Item", "CookedMutton_Item", "Ash_Item"] },
+    { "target": "Sheep_Corpse", "category": "Magic",  "sub": "Magic_Arcane",               "spawns": ["UndeadSheep"] },
+    { "target": "Sheep_Corpse", "category": "Magic",  "sub": "",                           "spawns": ["RottenMeat_Item", "Bone_Item"] },
+
+    { "target": "Arrow_Wood",     "category": "Mech",   "sub": "Mech_Impact | Mech_T3", "spawns": ["BrokenStick_Item"] },
+    { "target": "Arrow_Wood",     "category": "Mech",   "sub": "Mech_Impact",           "spawns": ["StuckArrow"] },
+    { "target": "Arrow_Wood",     "category": "Mech",   "sub": "",                      "spawns": ["BrokenStick_Item"] },
+    { "target": "Arrow_Wood",     "category": "Thermo", "sub": "",                      "spawns": ["Ash_Item"] },
+
+    { "target": "HomingOrb_Fire", "category": "Mech",   "sub": "Mech_Impact", "spawns": ["ExplosionShock", "Fire"], "emit_aoe": { "amount": 25, "channels": { "Thermo": [0.6, "Thermo_Heat_T2"], "Mech": [0.4, "Mech_T3"] } } },
+    { "target": "HomingOrb_Fire", "category": "Mech",   "sub": "",            "spawns": ["Ash_Item"] },
+    { "target": "HomingOrb_Fire", "category": "Thermo", "sub": "",            "spawns": [] },
+
+    { "target": "Sulfur_Bit",     "category": "Thermo", "sub": "", "spawns": ["ExplosionShock", "Fire"], "emit_aoe": { "amount": 40, "channels": { "Thermo": [0.5, "Thermo_Heat_T2"], "Mech": [0.5, "Mech_T4"] } } },
+    { "target": "Saltpeter_Bit",  "category": "Thermo", "sub": "", "spawns": ["ExplosionShock", "Fire"], "emit_aoe": { "amount": 40, "channels": { "Thermo": [0.5, "Thermo_Heat_T2"], "Mech": [0.5, "Mech_T4"] } } },
+    { "target": "Charcoal_Bit",   "category": "Thermo", "sub": "", "spawns": ["Fire", "Ash_Item"] },
+    { "target": "IronIngot_Bit",  "category": "Thermo", "sub": "", "spawns": ["IronIngot_Item"] },
+    { "target": "@Mat_ResourceBit","category": "Mech",  "sub": "", "spawns": [] }
+  ],
+
+  "workbench_recipes": [
+    { "inputs": ["Sulfur_Bit", "Charcoal_Bit", "Saltpeter_Bit"], "trigger_pulse": "Mech_Toggle", "output": "Gunpowder_Pack" },
+    { "inputs": ["IronIngot_Bit", "IronIngot_Bit", "OakStick_Bit"], "trigger_pulse": "Mech_Blunt", "output": "IronSword_Item" }
+  ]
+}
